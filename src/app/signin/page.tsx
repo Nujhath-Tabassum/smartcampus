@@ -1,4 +1,3 @@
-
 "use client";
 
 import campus from "../../../public/campus.png";
@@ -6,28 +5,75 @@ import campus from "../../../public/campus.png";
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const SignInPage = () => {
-  const [role, setRole] = useState("student");
+  const router = useRouter();
+
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
 
-    console.log({
-      role,
-      rememberMe,
-    });
+    setError("");
+    setLoading(true);
 
-    // Later we will connect this to Better Auth
+    try {
+      const response = await fetch(
+        "http://localhost:8000/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            identifier,
+            password,
+            rememberMe,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      const role = data.user.role;
+
+      if (role === "student") {
+        router.push("/student/dashboard");
+      } else if (role === "staff") {
+        router.push("/staff/dashboard");
+      } else if (role === "admin") {
+        router.push("/admin/dashboard");
+      } else {
+        setError("Invalid user role");
+      }
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong"
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <main className="min-h-screen bg-[#071226] text-white">
       <div className="grid min-h-screen lg:grid-cols-2">
-
-        {/* ================= LEFT SIDE ================= */}
 
         <section className="relative h-55 overflow-hidden sm:h-70 md:h-87.5 lg:h-screen">
           <Image
@@ -37,20 +83,12 @@ const SignInPage = () => {
             className="object-cover"
           />
 
-          {/* Dark overlay */}
-          <div className="absolute inset-0 bg-[#071b45]/20" />
-
-          {/* Dark overlay */}
           <div className="absolute inset-0 bg-[#071b45]/20" />
         </section>
-
-        {/* ================= RIGHT SIDE ================= */}
 
         <section className="flex min-h-screen items-center justify-center bg-[#071226] px-4 py-8 sm:px-6 sm:py-10 lg:px-16">
 
           <div className="w-full max-w-xl">
-
-            {/* Heading */}
 
             <div className="mb-6 sm:mb-8">
               <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -63,100 +101,11 @@ const SignInPage = () => {
               </p>
             </div>
 
-            {/* ================= ROLE SELECTOR ================= */}
-
-            <div className="mb-6 grid grid-cols-3 gap-2 sm:mb-7 sm:gap-3">
-
-              {/* Student */}
-
-              <button
-                type="button"
-                onClick={() => setRole("student")}
-                className={`rounded-xl border px-2 py-3 transition-all duration-200 sm:px-3 sm:py-4 ${
-                  role === "student"
-                    ? "border-indigo-500 bg-indigo-500/10 shadow-[0_0_20px_rgba(99,102,241,0.15)]"
-                    : "border-slate-700 bg-[#0b1a32] hover:border-slate-500"
-                }`}
-              >
-                <div className="mb-1 text-xl sm:mb-2 sm:text-2xl">
-                  🎓
-                </div>
-
-                <p
-                  className={`text-xs font-semibold sm:text-sm ${
-                    role === "student"
-                      ? "text-indigo-400"
-                      : "text-slate-300"
-                  }`}
-                >
-                  Student
-                </p>
-              </button>
-
-              {/* Admin */}
-
-              <button
-                type="button"
-                onClick={() => setRole("admin")}
-                className={`rounded-xl border px-2 py-3 transition-all duration-200 sm:px-3 sm:py-4 ${
-                  role === "admin"
-                    ? "border-indigo-500 bg-indigo-500/10 shadow-[0_0_20px_rgba(99,102,241,0.15)]"
-                    : "border-slate-700 bg-[#0b1a32] hover:border-slate-500"
-                }`}
-              >
-                <div className="mb-1 text-xl sm:mb-2 sm:text-2xl">
-                  🛡️
-                </div>
-
-                <p
-                  className={`text-xs font-semibold sm:text-sm ${
-                    role === "admin"
-                      ? "text-indigo-400"
-                      : "text-slate-300"
-                  }`}
-                >
-                  Admin
-                </p>
-              </button>
-
-              {/* Staff */}
-
-              <button
-                type="button"
-                onClick={() => setRole("staff")}
-                className={`rounded-xl border px-2 py-3 transition-all duration-200 sm:px-3 sm:py-4 ${
-                  role === "staff"
-                    ? "border-indigo-500 bg-indigo-500/10 shadow-[0_0_20px_rgba(99,102,241,0.15)]"
-                    : "border-slate-700 bg-[#0b1a32] hover:border-slate-500"
-                }`}
-              >
-                <div className="mb-1 text-xl sm:mb-2 sm:text-2xl">
-                  👨‍🔧
-                </div>
-
-                <p
-                  className={`text-xs font-semibold sm:text-sm ${
-                    role === "staff"
-                      ? "text-indigo-400"
-                      : "text-slate-300"
-                  }`}
-                >
-                  Staff
-                </p>
-              </button>
-
-            </div>
-
-            {/* ================= FORM ================= */}
-
             <form onSubmit={handleSubmit}>
 
-              {/* Email */}
-
               <div className="mb-4 sm:mb-5">
-
                 <label
-                  htmlFor="email"
+                  htmlFor="identifier"
                   className="mb-2 block text-sm font-medium text-slate-300"
                 >
                   Email or Student ID
@@ -169,22 +118,17 @@ const SignInPage = () => {
                   </span>
 
                   <input
-                    id="email"
+                    id="identifier"
                     type="text"
-                    placeholder={
-                      role === "student"
-                        ? "Enter your email or student ID"
-                        : "Enter your email"
-                    }
+                    placeholder="Enter your email or student ID"
+                    value={identifier}
+                    onChange={(e) => setIdentifier(e.target.value)}
                     className="w-full rounded-xl border border-slate-700 bg-[#0b1a32] py-3.5 pl-10 pr-4 text-sm text-white outline-none placeholder:text-slate-500 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 sm:py-4 sm:pl-12 sm:text-base"
                     required
                   />
 
                 </div>
-
               </div>
-
-              {/* Password */}
 
               <div className="mb-4 sm:mb-5">
 
@@ -204,8 +148,10 @@ const SignInPage = () => {
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    autoComplete="off"
+                    autoComplete="current-password"
                     placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="w-full rounded-xl border border-slate-700 bg-[#0b1a32] py-3.5 pl-10 pr-12 text-sm text-white outline-none placeholder:text-slate-500 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 sm:py-4 sm:pl-12 sm:pr-14 sm:text-base"
                     required
                   />
@@ -219,10 +165,7 @@ const SignInPage = () => {
                   </button>
 
                 </div>
-
               </div>
-
-              {/* Remember + Forgot */}
 
               <div className="mb-6 flex flex-wrap items-center justify-between gap-2 sm:mb-7">
 
@@ -248,23 +191,28 @@ const SignInPage = () => {
 
               </div>
 
-              {/* Sign In Button */}
+              {error && (
+                <p className="mb-4 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+                  {error}
+                </p>
+              )}
 
               <button
                 type="submit"
-                className="flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-500 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:from-indigo-400 hover:to-blue-400 active:scale-[0.99] sm:py-4 sm:text-base"
+                disabled={loading}
+                className="flex w-full items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-500 py-3.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:from-indigo-400 hover:to-blue-400 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 sm:py-4 sm:text-base"
               >
-                Sign In
+                {loading ? "Signing In..." : "Sign In"}
 
-                <span className="text-lg sm:text-xl">
-                  →
-                </span>
+                {!loading && (
+                  <span className="text-lg sm:text-xl">
+                    →
+                  </span>
+                )}
 
               </button>
 
             </form>
-
-            {/* ================= SIGN UP ================= */}
 
             <div className="my-6 flex items-center gap-3 sm:my-8 sm:gap-4">
 
@@ -283,18 +231,12 @@ const SignInPage = () => {
               Don&apos;t have an account?
 
               <Link
-                href="/sign-up"
+                href="/signup"
                 className="ml-2 font-semibold text-indigo-400 transition hover:text-indigo-300"
               >
                 Sign Up
               </Link>
 
-            </p>
-
-            {/* Selected Role - temporary for testing */}
-
-            <p className="mt-5 text-center text-[10px] text-slate-600 sm:mt-6 sm:text-xs">
-              Selected role: {role}
             </p>
 
           </div>
