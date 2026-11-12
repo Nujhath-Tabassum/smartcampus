@@ -1,199 +1,248 @@
 "use client";
 
-import ProtectedRoute from "@/components/ProtectedRoute";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import {
-  FileText,
-  Clock,
-  LoaderCircle,
-  CheckCircle,
-  Plus,
-  ArrowRight,
   ClipboardList,
-  Wrench,
+  Clock,
+  CheckCircle,
+  LoaderCircle,
+  PlusCircle,
 } from "lucide-react";
 
-const stats = [
-  {
-    title: "Total Complaints",
-    value: "0",
-    icon: FileText,
-    color: "text-indigo-400",
-    bg: "bg-indigo-500/10",
-  },
-  {
-    title: "Pending",
-    value: "0",
-    icon: Clock,
-    color: "text-yellow-400",
-    bg: "bg-yellow-500/10",
-  },
-  {
-    title: "In Progress",
-    value: "0",
-    icon: LoaderCircle,
-    color: "text-blue-400",
-    bg: "bg-blue-500/10",
-  },
-  {
-    title: "Resolved",
-    value: "0",
-    icon: CheckCircle,
-    color: "text-green-400",
-    bg: "bg-green-500/10",
-  },
-];
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+interface Complaint {
+  _id: string;
+  title: string;
+  category: string;
+  building: string;
+  room: string;
+  priority: string;
+  status: string;
+  createdAt: string;
+}
+
+interface DashboardData {
+  total: number;
+  pending: number;
+  inProgress: number;
+  resolved: number;
+}
+
+interface Student {
+  name: string;
+  email: string;
+  studentId: string;
+}
 
 export default function StudentDashboard() {
+  const [student, setStudent] = useState<Student | null>(null);
+
+  const [stats, setStats] = useState<DashboardData>({
+    total: 0,
+    pending: 0,
+    inProgress: 0,
+    resolved: 0,
+  });
+
+  const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const response = await fetch(
+          `${API_URL}/api/complaints/dashboard`,
+          {
+            credentials: "include",
+          }
+        );
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          setStats(data.stats);
+          setComplaints(data.recentComplaints);
+        }
+      } catch (error) {
+        console.error("Dashboard fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboard();
+  }, []);
+
+  useEffect(() => {
+    const fetchStudent = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/auth/me`, {
+          credentials: "include",
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          setStudent(data.user);
+        }
+      } catch (error) {
+        console.error("Student fetch error:", error);
+      }
+    };
+
+    fetchStudent();
+  }, []);
+
+  const statCards = [
+    {
+      title: "Total Complaints",
+      value: stats.total,
+      icon: ClipboardList,
+      color: "text-indigo-400",
+    },
+    {
+      title: "Pending",
+      value: stats.pending,
+      icon: Clock,
+      color: "text-yellow-400",
+    },
+    {
+      title: "In Progress",
+      value: stats.inProgress,
+      icon: LoaderCircle,
+      color: "text-blue-400",
+    },
+    {
+      title: "Resolved",
+      value: stats.resolved,
+      icon: CheckCircle,
+      color: "text-green-400",
+    },
+  ];
+
   return (
     <ProtectedRoute allowedRole="student">
-      <main className="min-h-screen bg-[#071226] p-5 text-white md:p-8">
-        <div className="mx-auto max-w-7xl">
-
-          {/* Welcome Section */}
-          <section className="mb-8">
-            <p className="text-sm font-medium text-indigo-400">
-              STUDENT DASHBOARD
-            </p>
-
-            <h1 className="mt-2 text-3xl font-bold md:text-4xl">
-              Welcome to Smart Campus!
+      <main className="p-8 text-white">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold">
+              Welcome back, {student?.name || "Student"}!
             </h1>
 
-            <p className="mt-3 text-slate-400">
-              Manage your complaints and stay updated on campus
-              maintenance activities.
+            <p className="mt-2 text-slate-400">
+              Track your complaints and campus maintenance requests.
             </p>
-          </section>
+          </div>
 
-          {/* Statistics */}
-          <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {stats.map((stat) => {
-              const Icon = stat.icon;
+          <Link
+            href="/student/report-problem"
+            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 font-medium transition hover:bg-indigo-700"
+          >
+            <PlusCircle size={19} />
+            Report a Problem
+          </Link>
+        </div>
 
-              return (
-                <div
-                  key={stat.title}
-                  className="rounded-2xl border border-slate-800 bg-[#101e35] p-6"
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-slate-400">
-                      {stat.title}
-                    </p>
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          {statCards.map((card) => {
+            const Icon = card.icon;
 
-                    <div className={`rounded-xl p-3 ${stat.bg}`}>
-                      <Icon className={`h-5 w-5 ${stat.color}`} />
-                    </div>
-                  </div>
+            return (
+              <div
+                key={card.title}
+                className="rounded-2xl border border-slate-800 bg-[#0b1930] p-6"
+              >
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-slate-400">
+                    {card.title}
+                  </p>
 
-                  <h2 className="mt-5 text-3xl font-bold">
-                    {stat.value}
-                  </h2>
+                  <Icon className={card.color} size={24} />
                 </div>
-              );
-            })}
-          </section>
 
-          {/* Quick Actions */}
-          <section className="mt-10">
+                <h2 className="mt-4 text-3xl font-bold">
+                  {loading ? "..." : card.value}
+                </h2>
+              </div>
+            );
+          })}
+        </div>
+
+        <section className="mt-10 rounded-2xl border border-slate-800 bg-[#0b1930] p-6">
+          <div className="mb-6 flex items-center justify-between">
             <h2 className="text-xl font-semibold">
-              Quick Actions
+              Recent Complaints
             </h2>
 
-            <div className="mt-5 grid gap-5 md:grid-cols-2">
-              <Link
-                href="/student/report-problem"
-                className="group flex items-center justify-between rounded-2xl border border-indigo-500/20 bg-indigo-500/10 p-6 transition hover:border-indigo-400/50 hover:bg-indigo-500/15"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="rounded-xl bg-indigo-500 p-3">
-                    <Plus className="h-6 w-6 text-white" />
-                  </div>
+            <Link
+              href="/student/my-complaints"
+              className="text-sm text-indigo-400 hover:text-indigo-300"
+            >
+              View All
+            </Link>
+          </div>
 
-                  <div>
-                    <h3 className="font-semibold">
-                      Report a Problem
-                    </h3>
+          {loading ? (
+            <p className="py-8 text-center text-slate-400">
+              Loading complaints...
+            </p>
+          ) : complaints.length === 0 ? (
+            <div className="py-10 text-center">
+              <ClipboardList
+                className="mx-auto mb-3 text-slate-500"
+                size={40}
+              />
 
-                    <p className="mt-1 text-sm text-slate-400">
-                      Submit a new campus complaint.
-                    </p>
-                  </div>
-                </div>
-
-                <ArrowRight className="h-5 w-5 text-indigo-400 transition group-hover:translate-x-1" />
-              </Link>
-
-              <Link
-                href="/student/my-complaints"
-                className="group flex items-center justify-between rounded-2xl border border-slate-800 bg-[#101e35] p-6 transition hover:border-slate-600"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="rounded-xl bg-blue-500/10 p-3">
-                    <ClipboardList className="h-6 w-6 text-blue-400" />
-                  </div>
-
-                  <div>
-                    <h3 className="font-semibold">
-                      My Complaints
-                    </h3>
-
-                    <p className="mt-1 text-sm text-slate-400">
-                      Track your submitted complaints.
-                    </p>
-                  </div>
-                </div>
-
-                <ArrowRight className="h-5 w-5 text-slate-400 transition group-hover:translate-x-1" />
-              </Link>
-            </div>
-          </section>
-
-          {/* Recent Complaints */}
-          <section className="mt-10 rounded-2xl border border-slate-800 bg-[#101e35] p-6">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-semibold">
-                  Recent Complaints
-                </h2>
-
-                <p className="mt-1 text-sm text-slate-400">
-                  Your latest submitted complaints.
-                </p>
-              </div>
-
-              <Link
-                href="/student/my-complaints"
-                className="flex items-center gap-2 text-sm font-medium text-indigo-400 hover:text-indigo-300"
-              >
-                View All
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="rounded-full bg-slate-800 p-4">
-                <Wrench className="h-8 w-8 text-slate-400" />
-              </div>
-
-              <h3 className="mt-4 font-medium">
-                No complaints yet
-              </h3>
-
-              <p className="mt-2 text-sm text-slate-400">
-                You haven&apos;t submitted any complaints.
+              <p className="text-slate-400">
+                You haven&and;t submitted any complaints yet.
               </p>
-
-              <Link
-                href="/student/report-problem"
-                className="mt-5 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium transition hover:bg-indigo-500"
-              >
-                Report a Problem
-              </Link>
             </div>
-          </section>
+          ) : (
+            <div className="space-y-4">
+              {complaints.map((complaint) => (
+                <div
+                  key={complaint._id}
+                  className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-800 p-4"
+                >
+                  <div>
+                    <h3 className="font-medium">
+                      {complaint.title}
+                    </h3>
 
-        </div>
+                    <p className="mt-1 text-sm text-slate-400">
+                      {complaint.category} · {complaint.building}
+                      {complaint.room
+                        ? ` · Room ${complaint.room}`
+                        : ""}
+                    </p>
+
+                    <p className="mt-2 text-xs text-slate-500">
+                      {new Date(
+                        complaint.createdAt
+                      ).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-medium ${
+                      complaint.status === "Resolved"
+                        ? "bg-green-500/10 text-green-400"
+                        : complaint.status === "In Progress"
+                          ? "bg-blue-500/10 text-blue-400"
+                          : "bg-yellow-500/10 text-yellow-400"
+                    }`}
+                  >
+                    {complaint.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       </main>
     </ProtectedRoute>
   );
