@@ -347,7 +347,7 @@ export default function Home() {
 
                   <div className="relative rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm transition duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-indigo-500/10 dark:border-slate-700 dark:bg-[#0b1930]">
                     <div className="absolute right-5 top-5 text-3xl font-extrabold text-slate-100 dark:text-slate-800">
-                      {step.number}
+                     
                     </div>
 
                     <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600 transition duration-300 group-hover:rotate-6 group-hover:scale-110 dark:bg-indigo-500/15 dark:text-indigo-400">
@@ -378,7 +378,7 @@ export default function Home() {
             <GraduationCap className="mx-auto mb-6" size={45} />
 
             <h2 className="text-3xl font-extrabold sm:text-4xl">
-              Let's Build a Better Campus Together
+              Let&apos;s Build a Better Campus Together
             </h2>
 
             <p className="mx-auto mt-5 max-w-2xl leading-7 text-indigo-100">

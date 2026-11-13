@@ -16,6 +16,13 @@ import {
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+interface StaffInfo {
+  _id: string;
+  name: string;
+  email: string;
+  department?: string;
+}
+
 interface Complaint {
   _id: string;
   title: string;
@@ -25,7 +32,7 @@ interface Complaint {
   description: string;
   priority: string;
   status: string;
-  assignedStaff: string | null;
+  assignedStaff: StaffInfo | string | null;
   createdAt: string;
   hasImage: boolean;
   imageUrl: string | null;
@@ -201,28 +208,36 @@ function ComplaintDetailsContent() {
 
               <div className="grid gap-6 sm:grid-cols-2">
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Category</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Category
+                  </p>
                   <p className="mt-2 font-medium">
                     {complaint.category}
                   </p>
                 </div>
 
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Priority</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Priority
+                  </p>
                   <p className="mt-2 font-medium">
                     {complaint.priority}
                   </p>
                 </div>
 
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Building</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Building
+                  </p>
                   <p className="mt-2 font-medium">
                     {complaint.building}
                   </p>
                 </div>
 
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Room</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Room
+                  </p>
                   <p className="mt-2 font-medium">
                     {complaint.room || "Not specified"}
                   </p>
@@ -233,7 +248,10 @@ function ComplaintDetailsContent() {
                     Assigned Staff
                   </p>
                   <p className="mt-2 font-medium">
-                    {complaint.assignedStaff || "Not assigned yet"}
+                    {typeof complaint.assignedStaff === "object" &&
+                    complaint.assignedStaff !== null
+                      ? complaint.assignedStaff.name
+                      : complaint.assignedStaff || "Not assigned yet"}
                   </p>
                 </div>
 
