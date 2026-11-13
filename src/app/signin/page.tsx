@@ -1,3 +1,4 @@
+
 "use client";
 
 import campus from "../../../public/campus.png";
@@ -10,12 +11,10 @@ import { useGoogleLogin } from "@react-oauth/google";
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+type Role = "student" | "staff" | "admin";
+
 const GoogleIcon = () => (
-  <svg
-    viewBox="0 0 48 48"
-    className="h-5 w-5"
-    aria-hidden="true"
-  >
+  <svg viewBox="0 0 48 48" className="h-5 w-5" aria-hidden="true">
     <path
       fill="#EA4335"
       d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z"
@@ -42,6 +41,7 @@ const SignInPage = () => {
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [selectedRole, setSelectedRole] = useState<Role>("student");
 
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -50,12 +50,19 @@ const SignInPage = () => {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const redirectUser = (role: string) => {
-    if (role === "student") {
+  const redirectUser = (actualRole: string) => {
+    if (actualRole !== selectedRole) {
+      setError(
+        `This account is not registered as ${selectedRole}. Please select the correct role.`
+      );
+      return;
+    }
+
+    if (actualRole === "student") {
       router.push("/student/dashboard");
-    } else if (role === "staff") {
+    } else if (actualRole === "staff") {
       router.push("/staff/dashboard");
-    } else if (role === "admin") {
+    } else if (actualRole === "admin") {
       router.push("/admin/dashboard");
     } else {
       setError("Invalid user role.");
@@ -81,6 +88,7 @@ const SignInPage = () => {
           identifier,
           password,
           rememberMe,
+          selectedRole,
         }),
       });
 
@@ -116,6 +124,7 @@ const SignInPage = () => {
         body: JSON.stringify({
           code,
           rememberMe,
+          selectedRole,
         }),
       });
 
@@ -128,6 +137,12 @@ const SignInPage = () => {
       }
 
       if (data.newUser) {
+        if (selectedRole !== "student") {
+          throw new Error(
+            "New Google accounts can only register as students."
+          );
+        }
+
         sessionStorage.setItem(
           "googleSignupToken",
           data.googleSignupToken
@@ -165,7 +180,7 @@ const SignInPage = () => {
   });
 
   const inputStyle =
-    "w-full rounded-xl border border-slate-300 bg-white py-3.5 pl-10 pr-4 text-sm text-slate-900 outline-none placeholder:text-slate-400 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-[#0b1a32] dark:text-white dark:placeholder:text-slate-500 sm:py-4 sm:pl-12 sm:text-base";
+    "w-full rounded-xl border border-slate-300 bg-white py-3.5 px-4 text-sm text-slate-900 outline-none placeholder:text-slate-400 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-[#0b1a32] dark:text-white dark:placeholder:text-slate-500 sm:py-4 sm:text-base";
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 transition-colors dark:bg-[#071226] dark:text-white">
@@ -197,6 +212,28 @@ const SignInPage = () => {
             <form onSubmit={handleSubmit}>
               <div className="mb-4 sm:mb-5">
                 <label
+                  htmlFor="role"
+                  className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                >
+                  Sign In As
+                </label>
+
+                <select
+                  id="role"
+                  value={selectedRole}
+                  onChange={(e) =>
+                    setSelectedRole(e.target.value as Role)
+                  }
+                  className={inputStyle}
+                >
+                  <option value="student">Student</option>
+                  <option value="staff">Staff</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+
+              <div className="mb-4 sm:mb-5">
+                <label
                   htmlFor="identifier"
                   className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
                 >
@@ -216,7 +253,7 @@ const SignInPage = () => {
                     onChange={(e) =>
                       setIdentifier(e.target.value)
                     }
-                    className={inputStyle}
+                    className={`${inputStyle} pl-10 sm:pl-12`}
                     required
                   />
                 </div>
@@ -244,7 +281,7 @@ const SignInPage = () => {
                     onChange={(e) =>
                       setPassword(e.target.value)
                     }
-                    className={`${inputStyle} pr-12 sm:pr-14`}
+                    className={`${inputStyle} pl-10 pr-12 sm:pl-12 sm:pr-14`}
                     required
                   />
 
@@ -296,9 +333,7 @@ const SignInPage = () => {
                 {loading ? "Signing In..." : "Sign In"}
 
                 {!loading && (
-                  <span className="text-lg sm:text-xl">
-                    →
-                  </span>
+                  <span className="text-lg sm:text-xl">→</span>
                 )}
               </button>
             </form>
