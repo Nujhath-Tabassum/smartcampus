@@ -4,6 +4,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "react-toastify";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { ArrowLeft, Save, UploadCloud } from "lucide-react";
 
@@ -40,7 +41,6 @@ function EditComplaintContent() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     const fetchComplaint = async () => {
@@ -106,12 +106,12 @@ function EditComplaintContent() {
     if (!file) return;
 
     if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
-      setError("Only JPG and PNG images are allowed.");
+      toast.error("Only JPG and PNG images are allowed.");
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setError("Image size must be less than 5MB.");
+      toast.error("Image size must be less than 5MB.");
       return;
     }
 
@@ -125,7 +125,6 @@ function EditComplaintContent() {
 
     setSaving(true);
     setError("");
-    setSuccess("");
 
     try {
       const form = new FormData();
@@ -150,29 +149,32 @@ function EditComplaintContent() {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
-        setError(data.message || "Failed to update complaint.");
+        toast.error(data.message || "Failed to update complaint.");
         return;
       }
 
-      setSuccess("Complaint updated successfully!");
+      toast.success("Complaint updated successfully!");
 
       setTimeout(() => {
         router.push(`/student/complaint-details/${id}`);
       }, 1000);
     } catch (error) {
       console.error("Update complaint error:", error);
-      setError("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setSaving(false);
     }
   };
 
+  const inputStyle =
+    "w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 dark:border-slate-700 dark:bg-[#071226] dark:text-white dark:placeholder:text-slate-500";
+
   return (
     <ProtectedRoute allowedRole="student">
-      <main className="min-h-screen p-8 text-white">
+      <main className="min-h-screen bg-slate-50 p-8 text-slate-900 transition-colors dark:bg-[#071226] dark:text-white">
         <Link
           href={`/student/complaint-details/${id}`}
-          className="mb-8 inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white"
+          className="mb-8 inline-flex items-center gap-2 text-sm text-slate-500 transition hover:text-indigo-600 dark:text-slate-400 dark:hover:text-white"
         >
           <ArrowLeft size={18} />
           Back to Complaint Details
@@ -181,22 +183,22 @@ function EditComplaintContent() {
         <div className="mx-auto max-w-3xl">
           <div className="mb-8">
             <h1 className="text-3xl font-bold">Edit Complaint</h1>
-            <p className="mt-2 text-slate-400">
+            <p className="mt-2 text-slate-600 dark:text-slate-400">
               Update your complaint information.
             </p>
           </div>
 
           {loading ? (
-            <p className="py-10 text-center text-slate-400">
+            <p className="py-10 text-center text-slate-500 dark:text-slate-400">
               Loading complaint information...
             </p>
           ) : error && !formData.title ? (
-            <div className="rounded-2xl border border-red-500/20 bg-[#0b1930] p-6 text-center">
-              <p className="text-red-400">{error}</p>
+            <div className="rounded-2xl border border-red-200 bg-white p-6 text-center dark:border-red-500/20 dark:bg-[#0b1930]">
+              <p className="text-red-600 dark:text-red-400">{error}</p>
 
               <Link
                 href="/student/my-complaints"
-                className="mt-5 inline-block rounded-xl bg-indigo-600 px-5 py-3 text-sm hover:bg-indigo-700"
+                className="mt-5 inline-block rounded-xl bg-indigo-600 px-5 py-3 text-sm text-white transition hover:bg-indigo-700"
               >
                 Back to My Complaints
               </Link>
@@ -204,22 +206,10 @@ function EditComplaintContent() {
           ) : (
             <form
               onSubmit={handleSubmit}
-              className="space-y-6 rounded-2xl border border-slate-800 bg-[#0b1930] p-6"
+              className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-[#0b1930]"
             >
-              {error && (
-                <p className="rounded-xl bg-red-500/10 p-4 text-sm text-red-400">
-                  {error}
-                </p>
-              )}
-
-              {success && (
-                <p className="rounded-xl bg-green-500/10 p-4 text-sm text-green-400">
-                  {success}
-                </p>
-              )}
-
               <div>
-                <label className="mb-2 block text-sm text-slate-300">
+                <label className="mb-2 block text-sm text-slate-700 dark:text-slate-300">
                   Complaint Title *
                 </label>
 
@@ -229,13 +219,13 @@ function EditComplaintContent() {
                   value={formData.title}
                   onChange={handleChange}
                   required
-                  className="w-full rounded-xl border border-slate-700 bg-[#071226] px-4 py-3 outline-none focus:border-indigo-500"
+                  className={inputStyle}
                 />
               </div>
 
               <div className="grid gap-6 sm:grid-cols-2">
                 <div>
-                  <label className="mb-2 block text-sm text-slate-300">
+                  <label className="mb-2 block text-sm text-slate-700 dark:text-slate-300">
                     Category *
                   </label>
 
@@ -244,7 +234,7 @@ function EditComplaintContent() {
                     value={formData.category}
                     onChange={handleChange}
                     required
-                    className="w-full rounded-xl border border-slate-700 bg-[#071226] px-4 py-3 outline-none focus:border-indigo-500"
+                    className={inputStyle}
                   >
                     <option value="">Select Category</option>
                     <option value="Electrical">Electrical</option>
@@ -257,7 +247,7 @@ function EditComplaintContent() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm text-slate-300">
+                  <label className="mb-2 block text-sm text-slate-700 dark:text-slate-300">
                     Priority *
                   </label>
 
@@ -266,7 +256,7 @@ function EditComplaintContent() {
                     value={formData.priority}
                     onChange={handleChange}
                     required
-                    className="w-full rounded-xl border border-slate-700 bg-[#071226] px-4 py-3 outline-none focus:border-indigo-500"
+                    className={inputStyle}
                   >
                     <option value="Low">Low</option>
                     <option value="Medium">Medium</option>
@@ -277,7 +267,7 @@ function EditComplaintContent() {
 
               <div className="grid gap-6 sm:grid-cols-2">
                 <div>
-                  <label className="mb-2 block text-sm text-slate-300">
+                  <label className="mb-2 block text-sm text-slate-700 dark:text-slate-300">
                     Building *
                   </label>
 
@@ -287,12 +277,12 @@ function EditComplaintContent() {
                     value={formData.building}
                     onChange={handleChange}
                     required
-                    className="w-full rounded-xl border border-slate-700 bg-[#071226] px-4 py-3 outline-none focus:border-indigo-500"
+                    className={inputStyle}
                   />
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm text-slate-300">
+                  <label className="mb-2 block text-sm text-slate-700 dark:text-slate-300">
                     Room
                   </label>
 
@@ -301,13 +291,13 @@ function EditComplaintContent() {
                     name="room"
                     value={formData.room}
                     onChange={handleChange}
-                    className="w-full rounded-xl border border-slate-700 bg-[#071226] px-4 py-3 outline-none focus:border-indigo-500"
+                    className={inputStyle}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-2 block text-sm text-slate-300">
+                <label className="mb-2 block text-sm text-slate-700 dark:text-slate-300">
                   Description *
                 </label>
 
@@ -317,19 +307,19 @@ function EditComplaintContent() {
                   onChange={handleChange}
                   required
                   rows={5}
-                  className="w-full resize-none rounded-xl border border-slate-700 bg-[#071226] px-4 py-3 outline-none focus:border-indigo-500"
+                  className={`${inputStyle} resize-none`}
                 />
               </div>
 
               <div>
-                <label className="mb-3 block text-sm text-slate-300">
+                <label className="mb-3 block text-sm text-slate-700 dark:text-slate-300">
                   Complaint Image
                 </label>
 
-                <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-600 bg-[#071226] p-6 transition hover:border-indigo-500">
-                  <UploadCloud className="mb-2 text-indigo-400" size={30} />
+                <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 transition hover:border-indigo-500 dark:border-slate-600 dark:bg-[#071226]">
+                  <UploadCloud className="mb-2 text-indigo-500 dark:text-indigo-400" size={30} />
 
-                  <span className="text-sm text-slate-300">
+                  <span className="text-sm text-slate-700 dark:text-slate-300">
                     Click to upload a new image
                   </span>
 
@@ -347,14 +337,14 @@ function EditComplaintContent() {
 
                 {imagePreview && (
                   <div className="mt-4">
-                    <p className="mb-2 text-sm text-slate-400">
+                    <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
                       Current image / New image preview
                     </p>
 
                     <img
                       src={imagePreview}
                       alt="Complaint preview"
-                      className="max-h-64 rounded-xl border border-slate-700 object-contain"
+                      className="max-h-64 rounded-xl border border-slate-200 object-contain dark:border-slate-700"
                     />
                   </div>
                 )}
@@ -364,7 +354,7 @@ function EditComplaintContent() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 font-medium transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 font-medium text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Save size={18} />
                   {saving ? "Saving Changes..." : "Save Changes"}
@@ -372,7 +362,7 @@ function EditComplaintContent() {
 
                 <Link
                   href={`/student/complaint-details/${id}`}
-                  className="rounded-xl border border-slate-700 px-6 py-3 text-sm transition hover:bg-slate-800"
+                  className="rounded-xl border border-slate-300 px-6 py-3 text-sm text-slate-700 transition hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
                 >
                   Cancel
                 </Link>
@@ -389,7 +379,7 @@ export default function EditComplaintPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[#071226] text-slate-400">
+        <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-500 transition-colors dark:bg-[#071226] dark:text-slate-400">
           Loading edit page...
         </div>
       }

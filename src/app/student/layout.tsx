@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import StudentSidebar from "@/components/StudentSidebar";
+import { ToastContainer } from "react-toastify";
 
 export default function StudentLayout({
   children,
@@ -17,6 +18,12 @@ export default function StudentLayout({
       </Suspense>
 
       <main className="ml-64 min-h-screen">{children}</main>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        theme="dark"
+      />
     </div>
   );
 }

@@ -1,8 +1,10 @@
+
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import { toast } from "react-toastify";
 import {
   ArrowLeft,
   Upload,
@@ -25,14 +27,25 @@ export default function ReportProblemPage() {
   const [priority, setPriority] = useState("Medium");
   const [image, setImage] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError("");
 
     if (!title || !category || !building || !description) {
-      setError("Please fill in all required fields.");
+      toast.error("Please fill in all required fields.");
+      return;
+    }
+
+    if (
+      image &&
+      !["image/png", "image/jpeg"].includes(image.type)
+    ) {
+      toast.error("Only JPG and PNG images are allowed.");
+      return;
+    }
+
+    if (image && image.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB.");
       return;
     }
 
@@ -60,13 +73,18 @@ export default function ReportProblemPage() {
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to submit complaint.");
+      if (!response.ok || !data.success) {
+        toast.error(data.message || "Failed to submit complaint.");
+        return;
       }
 
-      router.push("/student/my-complaints");
+      toast.success("Complaint submitted successfully!");
+
+      setTimeout(() => {
+        router.push("/student/my-complaints");
+      }, 1000);
     } catch (error) {
-      setError(
+      toast.error(
         error instanceof Error
           ? error.message
           : "Something went wrong."
@@ -76,21 +94,23 @@ export default function ReportProblemPage() {
     }
   };
 
+  const inputStyle =
+    "w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-[#071226] dark:text-white dark:placeholder:text-slate-500";
+
   return (
     <ProtectedRoute allowedRole="student">
-      <main className="min-h-screen bg-[#071226] px-5 py-10 text-white md:px-8">
+      <main className="min-h-screen bg-slate-50 px-5 py-10 text-slate-900 transition-colors duration-300 dark:bg-[#080f1e] dark:text-white md:px-8">
         <div className="mx-auto max-w-3xl">
-
           <Link
             href="/student/dashboard"
-            className="mb-8 inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white"
+            className="mb-8 inline-flex items-center gap-2 text-sm text-slate-600 transition hover:text-indigo-600 dark:text-slate-400 dark:hover:text-white"
           >
             <ArrowLeft size={18} />
             Back to Dashboard
           </Link>
 
           <div className="mb-8">
-            <p className="text-sm font-medium text-indigo-400">
+            <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
               STUDENT DASHBOARD
             </p>
 
@@ -98,14 +118,14 @@ export default function ReportProblemPage() {
               Report a Problem
             </h1>
 
-            <p className="mt-3 text-slate-400">
+            <p className="mt-3 text-slate-600 dark:text-slate-400">
               Tell us about the issue you are experiencing on campus.
             </p>
           </div>
 
           <form
             onSubmit={handleSubmit}
-            className="space-y-6 rounded-2xl border border-slate-800 bg-[#101e35] p-6 md:p-8"
+            className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-[#101e35] md:p-8"
           >
             <div>
               <label className="mb-2 block text-sm font-medium">
@@ -117,7 +137,7 @@ export default function ReportProblemPage() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Enter a short title"
-                className="w-full rounded-lg border border-slate-700 bg-[#071226] px-4 py-3 outline-none focus:border-indigo-500"
+                className={inputStyle}
                 required
               />
             </div>
@@ -130,7 +150,7 @@ export default function ReportProblemPage() {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full rounded-lg border border-slate-700 bg-[#071226] px-4 py-3 outline-none focus:border-indigo-500"
+                className={inputStyle}
                 required
               >
                 <option value="">Select a category</option>
@@ -154,7 +174,7 @@ export default function ReportProblemPage() {
                   value={building}
                   onChange={(e) => setBuilding(e.target.value)}
                   placeholder="Building name"
-                  className="w-full rounded-lg border border-slate-700 bg-[#071226] px-4 py-3 outline-none focus:border-indigo-500"
+                  className={inputStyle}
                   required
                 />
               </div>
@@ -169,7 +189,7 @@ export default function ReportProblemPage() {
                   value={room}
                   onChange={(e) => setRoom(e.target.value)}
                   placeholder="e.g. 302"
-                  className="w-full rounded-lg border border-slate-700 bg-[#071226] px-4 py-3 outline-none focus:border-indigo-500"
+                  className={inputStyle}
                 />
               </div>
             </div>
@@ -182,7 +202,7 @@ export default function ReportProblemPage() {
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                className="w-full rounded-lg border border-slate-700 bg-[#071226] px-4 py-3 outline-none focus:border-indigo-500"
+                className={inputStyle}
               >
                 <option value="Low">Low</option>
                 <option value="Medium">Medium</option>
@@ -200,7 +220,7 @@ export default function ReportProblemPage() {
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Describe the problem in detail..."
                 rows={5}
-                className="w-full resize-none rounded-lg border border-slate-700 bg-[#071226] px-4 py-3 outline-none focus:border-indigo-500"
+                className={`${inputStyle} resize-none`}
                 required
               />
             </div>
@@ -210,10 +230,10 @@ export default function ReportProblemPage() {
                 Attach Image (Optional)
               </label>
 
-              <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-700 bg-[#071226] p-8 transition hover:border-indigo-500">
-                <ImagePlus className="mb-3 h-8 w-8 text-indigo-400" />
+              <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-8 transition hover:border-indigo-500 hover:bg-indigo-50 dark:border-slate-700 dark:bg-[#071226] dark:hover:bg-[#14233d]">
+                <ImagePlus className="mb-3 h-8 w-8 text-indigo-500 dark:text-indigo-400" />
 
-                <span className="text-sm text-slate-300">
+                <span className="text-sm text-slate-700 dark:text-slate-300">
                   {image ? image.name : "Click to upload an image"}
                 </span>
 
@@ -235,7 +255,7 @@ export default function ReportProblemPage() {
                 <button
                   type="button"
                   onClick={() => setImage(null)}
-                  className="mt-3 flex items-center gap-2 text-sm text-red-400"
+                  className="mt-3 flex items-center gap-2 text-sm text-red-500 transition hover:text-red-600 dark:text-red-400"
                 >
                   <X size={16} />
                   Remove image
@@ -243,16 +263,10 @@ export default function ReportProblemPage() {
               )}
             </div>
 
-            {error && (
-              <p className="rounded-lg bg-red-500/10 p-3 text-sm text-red-400">
-                {error}
-              </p>
-            )}
-
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 py-3 font-semibold transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 py-3 font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Upload size={18} />
               {loading ? "Submitting..." : "Submit Complaint"}

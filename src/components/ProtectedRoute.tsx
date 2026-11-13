@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -68,11 +69,11 @@ const ProtectedRoute = ({
 
   if (loading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#071226]">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors dark:bg-[#071226]">
         <div className="text-center">
           <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
 
-          <p className="mt-4 text-sm text-slate-400">
+          <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
             Checking your account...
           </p>
         </div>

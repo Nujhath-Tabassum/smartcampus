@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -69,23 +70,23 @@ export default function MyComplaintsPage() {
   const getStatusStyle = (status: string) => {
     switch (status) {
       case "Resolved":
-        return "bg-green-500/10 text-green-400";
+        return "bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400";
 
       case "In Progress":
-        return "bg-blue-500/10 text-blue-400";
+        return "bg-blue-100 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400";
 
       default:
-        return "bg-yellow-500/10 text-yellow-400";
+        return "bg-yellow-100 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400";
     }
   };
 
   return (
     <ProtectedRoute allowedRole="student">
-      <main className="min-h-screen bg-[#071226] px-5 py-10 text-white">
+      <main className="min-h-screen bg-slate-50 px-5 py-10 text-slate-900 transition-colors duration-300 dark:bg-[#080f1e] dark:text-white">
         <div className="mx-auto max-w-5xl">
           <Link
             href="/student/dashboard"
-            className="mb-8 inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white"
+            className="mb-8 inline-flex items-center gap-2 text-sm text-slate-600 transition hover:text-indigo-600 dark:text-slate-400 dark:hover:text-white"
           >
             <ArrowLeft size={18} />
             Back to Dashboard
@@ -93,7 +94,7 @@ export default function MyComplaintsPage() {
 
           <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
-              <p className="text-sm font-medium text-indigo-400">
+              <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
                 STUDENT DASHBOARD
               </p>
 
@@ -101,33 +102,33 @@ export default function MyComplaintsPage() {
                 My Complaints
               </h1>
 
-              <p className="mt-3 text-slate-400">
+              <p className="mt-3 text-slate-600 dark:text-slate-400">
                 View and track all your submitted complaints.
               </p>
             </div>
 
             <Link
               href="/student/report-problem"
-              className="rounded-lg bg-indigo-600 px-5 py-3 text-center text-sm font-semibold transition hover:bg-indigo-500"
+              className="rounded-lg bg-indigo-600 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-indigo-700"
             >
               + Report a Problem
             </Link>
           </div>
 
           {loading ? (
-            <div className="rounded-2xl border border-slate-800 bg-[#101e35] p-10 text-center">
+            <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm dark:border-slate-800 dark:bg-[#101e35]">
               <div className="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent" />
 
-              <p className="mt-4 text-slate-400">
+              <p className="mt-4 text-slate-600 dark:text-slate-400">
                 Loading complaints...
               </p>
             </div>
           ) : error ? (
-            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-5 text-center text-red-400">
+            <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-center text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
               {error}
             </div>
           ) : complaints.length === 0 ? (
-            <div className="rounded-2xl border border-slate-800 bg-[#101e35] px-6 py-16 text-center">
+            <div className="rounded-2xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm dark:border-slate-800 dark:bg-[#101e35]">
               <ClipboardList
                 size={45}
                 className="mx-auto text-slate-500"
@@ -137,13 +138,13 @@ export default function MyComplaintsPage() {
                 No Complaints Yet
               </h2>
 
-              <p className="mt-2 text-sm text-slate-400">
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
                 You haven&apos;t submitted any complaints.
               </p>
 
               <Link
                 href="/student/report-problem"
-                className="mt-6 inline-block rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold hover:bg-indigo-500"
+                className="mt-6 inline-block rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
               >
                 Report Your First Problem
               </Link>
@@ -154,7 +155,7 @@ export default function MyComplaintsPage() {
                 <Link
                   key={complaint._id}
                   href={`/student/complaint-details/${complaint._id}`}
-                  className="block rounded-2xl border border-slate-800 bg-[#101e35] p-6 transition hover:border-indigo-500/50 hover:bg-[#14233d]"
+                  className="block rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-indigo-400 hover:bg-indigo-50 dark:border-slate-800 dark:bg-[#101e35] dark:hover:border-indigo-500/50 dark:hover:bg-[#14233d]"
                 >
                   <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                     <div>
@@ -172,28 +173,28 @@ export default function MyComplaintsPage() {
                         </span>
                       </div>
 
-                      <p className="mt-2 text-sm text-indigo-400">
+                      <p className="mt-2 text-sm text-indigo-600 dark:text-indigo-400">
                         {complaint.category}
                       </p>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <span className="w-fit rounded-lg bg-slate-800 px-3 py-1 text-xs text-slate-300">
+                      <span className="w-fit rounded-lg bg-slate-100 px-3 py-1 text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                         {complaint.priority} Priority
                       </span>
 
                       <ArrowUpRight
                         size={18}
-                        className="text-slate-400"
+                        className="text-slate-500"
                       />
                     </div>
                   </div>
 
-                  <p className="mt-4 text-sm leading-6 text-slate-400">
+                  <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-slate-400">
                     {complaint.description}
                   </p>
 
-                  <div className="mt-5 flex flex-wrap items-center gap-5 border-t border-slate-800 pt-5 text-xs text-slate-400">
+                  <div className="mt-5 flex flex-wrap items-center gap-5 border-t border-slate-200 pt-5 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
                     <span className="flex items-center gap-2">
                       <MapPin size={15} />
                       {complaint.building}
@@ -216,7 +217,7 @@ export default function MyComplaintsPage() {
                     )}
                   </div>
 
-                  <p className="mt-4 text-xs font-medium text-indigo-400">
+                  <p className="mt-4 text-xs font-medium text-indigo-600 dark:text-indigo-400">
                     Click to view complaint details →
                   </p>
                 </Link>
